@@ -1,4 +1,4 @@
-issuer: http://localhost:18080/dex
+issuer: __OOD_LOCAL_BASE_URL__/dex
 storage:
   type: sqlite3
   config:
@@ -10,16 +10,16 @@ telemetry:
 staticClients:
   - id: localhost
     redirectURIs:
-      - http://localhost:18080/oidc
+      - __OOD_LOCAL_BASE_URL__/oidc
     name: OnDemand
     secret: __OOD_LOCAL_DEX_CLIENT_SECRET__
 oauth2:
   skipApprovalScreen: true
 enablePasswordDB: true
 staticPasswords:
-  - email: misaki@localhost
+  - email: ooddev@localhost
     hash: "__OOD_LOCAL_PASSWORD_HASH__"
-    username: misaki
+    username: ooddev
     userID: "__OOD_LOCAL_USER_ID__"
 frontend:
   dir: /usr/share/ondemand-dex/web

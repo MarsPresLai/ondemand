@@ -1,4 +1,4 @@
-issuer: http://localhost:18080/dex
+issuer: __OOD_LOCAL_BASE_URL__/dex
 storage:
   type: sqlite3
   config:
@@ -10,7 +10,7 @@ telemetry:
 staticClients:
   - id: localhost
     redirectURIs:
-      - http://localhost:18080/oidc
+      - __OOD_LOCAL_BASE_URL__/oidc
     name: OnDemand
     secret: __OOD_LOCAL_DEX_CLIENT_SECRET__
 oauth2:
@@ -23,8 +23,8 @@ connectors:
     config:
       ssoURL: https://adfs.ntu.edu.tw/adfs/ls/
       ca: /etc/ood/dex/adfs-ntu.crt
-      redirectURI: http://localhost:18080/dex/callback
-      entityIssuer: http://localhost:18080/dex/callback
+      redirectURI: __OOD_LOCAL_BASE_URL__/dex/callback
+      entityIssuer: __OOD_LOCAL_BASE_URL__/dex/callback
       usernameAttr: "http://www.ntu.edu.tw/AccountName"
       emailAttr: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
       nameIDPolicyFormat: unspecified

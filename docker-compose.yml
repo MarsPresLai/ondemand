@@ -1,45 +1,63 @@
+x-ondemand-common: &ondemand-common
+  build:
+    context: .
+    dockerfile: Dockerfile.dev
+    args:
+      USER: ${OOD_DEV_USER:-ooddev}
+      UID: ${OOD_DEV_UID:-1000}
+      GID: ${OOD_DEV_GID:-1000}
+  hostname: localhost
+  cgroup: host
+  privileged: true
+  tmpfs:
+    - /run
+    - /run/lock
+    - /tmp
+  volumes:
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - ./docker/public/index.html:/var/www/ood/public/index.html:ro
+    - ./ood-portal-generator/share/need_auth.html:/var/www/ood/public/need_auth.html:ro
+    - ./ood-portal-generator/share/maintenance.html:/var/www/ood/public/maintenance/index.html:ro
+    - ./packaging/files/logo.png:/var/www/ood/public/logo.png:ro
+    - ./packaging/files/favicon.ico:/var/www/ood/public/favicon.ico:ro
+    - ./apps/dashboard:/var/www/ood/apps/sys/dashboard
+    - ./apps/myjobs:/var/www/ood/apps/sys/myjobs
+    - ./apps/shell:/var/www/ood/apps/sys/shell
+    - ./apps/bc_desktop:/var/www/ood/apps/sys/bc_desktop
+    - ./nginx_stage:/opt/ood/nginx_stage
+    - ./docker/start-ondemand.sh:/usr/local/bin/start-ondemand.sh:ro
+    - ./docker/bin/ondemand-dex:/usr/sbin/ondemand-dex:ro
+    - ./:/workspace/ondemand
+  working_dir: /workspace/ondemand
+  command: ["/usr/local/bin/start-ondemand.sh"]
+
 services:
-  ondemand:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-      args:
-        USER: ${OOD_DEV_USER:-misaki}
-        UID: ${OOD_DEV_UID:-1218}
-        GID: ${OOD_DEV_GID:-5201}
-    container_name: ${OOD_CONTAINER_NAME:-ondemand-dev}
-    hostname: localhost
-    cgroup: host
-    privileged: true
+  ondemand-prod:
+    <<: *ondemand-common
+    container_name: ${OOD_PROD_CONTAINER_NAME:-ondemand-prod}
     environment:
       container: docker
-      OOD_AUTH_MODE: ${OOD_AUTH_MODE:-local}
+      OOD_CONTAINER_USER: ${OOD_DEV_USER:-ooddev}
+      OOD_AUTH_MODE: ntu-sso
       OOD_DEX_CLIENT_SECRET: ${OOD_DEX_CLIENT_SECRET:-}
+    ports:
+      - "${OOD_PROD_HTTP_PORT:-18080}:18080"
+      - "${OOD_PROD_DEX_PORT:-15556}:5556"
+
+  ondemand-dev:
+    <<: *ondemand-common
+    profiles: ["dev"]
+    container_name: ${OOD_DEV_CONTAINER_NAME:-ondemand-dev}
+    environment:
+      container: docker
+      OOD_CONTAINER_USER: ${OOD_DEV_USER:-ooddev}
+      OOD_AUTH_MODE: local
+      OOD_LOCAL_BASE_URL: ${OOD_LOCAL_BASE_URL:-http://localhost:18081}
+      OOD_LOCAL_HTTP_PORT: ${OOD_LOCAL_HTTP_PORT:-18081}
       OOD_LOCAL_DEX_CLIENT_SECRET: ${OOD_LOCAL_DEX_CLIENT_SECRET:-}
       OOD_LOCAL_PASSWORD: ${OOD_LOCAL_PASSWORD:-}
       OOD_LOCAL_PASSWORD_HASH: ${OOD_LOCAL_PASSWORD_HASH:-}
       OOD_LOCAL_USER_ID: ${OOD_LOCAL_USER_ID:-}
     ports:
-      - "${OOD_HTTP_PORT:-18080}:18080"
-      - "${OOD_DEX_PORT:-15556}:5556"
-    tmpfs:
-      - /run
-      - /run/lock
-      - /tmp
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-      - ./docker/public/index.html:/var/www/ood/public/index.html:ro
-      - ./ood-portal-generator/share/need_auth.html:/var/www/ood/public/need_auth.html:ro
-      - ./ood-portal-generator/share/maintenance.html:/var/www/ood/public/maintenance/index.html:ro
-      - ./packaging/files/logo.png:/var/www/ood/public/logo.png:ro
-      - ./packaging/files/favicon.ico:/var/www/ood/public/favicon.ico:ro
-      - ./apps/dashboard:/var/www/ood/apps/sys/dashboard
-      - ./apps/myjobs:/var/www/ood/apps/sys/myjobs
-      - ./apps/shell:/var/www/ood/apps/sys/shell
-      - ./apps/bc_desktop:/var/www/ood/apps/sys/bc_desktop
-      - ./nginx_stage:/opt/ood/nginx_stage
-      - ./docker/start-ondemand.sh:/usr/local/bin/start-ondemand.sh:ro
-      - ./docker/bin/ondemand-dex:/usr/sbin/ondemand-dex:ro
-      - ./:/workspace/ondemand
-    working_dir: /workspace/ondemand
-    command: ["/usr/local/bin/start-ondemand.sh"]
+      - "${OOD_DEV_HTTP_PORT:-18081}:18080"
+      - "${OOD_DEV_DEX_PORT:-15557}:5556"

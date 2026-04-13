@@ -1,6 +1,6 @@
 # OnDemand Dex Patch Workflow
 
-`/storage/admin/misaki/ondemand-dex` is a separate git repository with local
+`../ondemand-dex` is a separate git repository with local
 packaging changes for SAML `userIDAttr` fallback support. Do not copy that
 entire working tree into this repo.
 
@@ -9,15 +9,15 @@ Use one of these workflows.
 ## Recommended: fork plus submodule
 
 1. Fork `OSC/ondemand-dex` to your GitHub account.
-2. Push the local patch branch from `/storage/admin/misaki/ondemand-dex`.
+2. Push the local patch branch from `../ondemand-dex`.
 3. Push that branch to your fork.
 4. Add it here as a submodule only after the fork URL exists:
 
 ```bash
-cd /storage/admin/misaki/ondemand-dex
+cd ../ondemand-dex
 git push -u git@github.com:MarsPresLai/ondemand-dex.git saml-useridattr-fallback
 
-cd /storage/admin/misaki/ondemand
+cd ../ondemand
 git submodule add -b saml-useridattr-fallback git@github.com:MarsPresLai/ondemand-dex.git vendor/ondemand-dex
 git commit -m "chore: add patched ondemand-dex submodule"
 ```
@@ -35,7 +35,7 @@ will not automatically know which Dex patch to use.
 
 Local branch:
 
-- Repo: `/storage/admin/misaki/ondemand-dex`
+- Repo: `../ondemand-dex`
 - Branch: `saml-useridattr-fallback`
 - Commit: `676c38e feat: add SAML userIDAttr fallback patch`
 

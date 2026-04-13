@@ -6,16 +6,16 @@ runtime config stays out of git.
 ## First start
 
 ```bash
-cd /storage/admin/misaki/ondemand
+cd ondemand
 docker compose build
-OOD_AUTH_MODE=local docker compose up -d
+docker compose --profile dev up -d ondemand-dev
 ```
 
-Open `http://localhost:18080`.
+Open `http://localhost:18081`.
 
 The local auth mode is intentionally disposable:
 
-- Email: `misaki@localhost`
+- Email: `ooddev@localhost`
 - Password: the `OOD_LOCAL_PASSWORD` value in your untracked `.env`
 - OIDC client secret: the `OOD_LOCAL_DEX_CLIENT_SECRET` value in your untracked `.env`
 
@@ -28,6 +28,17 @@ Create an untracked `.env` file before starting either local auth or SSO:
 ```bash
 OOD_AUTH_MODE=ntu-sso
 OOD_DEX_CLIENT_SECRET=replace-with-rotated-secret
+OOD_PROD_CONTAINER_NAME=ondemand-prod
+OOD_PROD_HTTP_PORT=18080
+OOD_PROD_DEX_PORT=15556
+OOD_DEV_CONTAINER_NAME=ondemand-dev
+OOD_DEV_HTTP_PORT=18081
+OOD_DEV_DEX_PORT=15557
+OOD_DEV_USER=ooddev
+OOD_DEV_UID=1000
+OOD_DEV_GID=1000
+OOD_LOCAL_BASE_URL=http://localhost:18081
+OOD_LOCAL_HTTP_PORT=18081
 OOD_LOCAL_DEX_CLIENT_SECRET=replace-with-local-secret
 OOD_LOCAL_PASSWORD=replace-with-local-password
 OOD_LOCAL_PASSWORD_HASH=replace-with-bcrypt-hash
@@ -48,9 +59,9 @@ secret back into `docker/config`.
 
 ```bash
 docker compose logs -f
-docker compose exec ondemand bash
-docker compose down
-docker compose down -v
+docker compose logs -f ondemand-dev
+docker compose exec ondemand-dev bash
+docker compose --profile dev stop ondemand-dev
 ```
 
 ## Pre-push check

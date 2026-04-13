@@ -19,11 +19,14 @@ For the Docker workflow, provide the Dex client secret through the environment:
 ```bash
 export OOD_AUTH_MODE=ntu-sso
 export OOD_DEX_CLIENT_SECRET='replace-with-rotated-secret'
+export OOD_PROD_CONTAINER_NAME=ondemand-prod
+export OOD_PROD_HTTP_PORT=18080
+export OOD_PROD_DEX_PORT=15556
 export OOD_LOCAL_DEX_CLIENT_SECRET='replace-with-rotated-local-secret'
 export OOD_LOCAL_PASSWORD='replace-with-rotated-local-password'
 export OOD_LOCAL_PASSWORD_HASH='replace-with-rotated-local-bcrypt-hash'
 export OOD_LOCAL_USER_ID='replace-with-rotated-local-user-id'
-docker compose up -d
+docker compose up -d ondemand-prod
 ```
 
 For a non-Docker host deployment, use the same principle: copy the tracked
@@ -54,8 +57,8 @@ Recommended flow:
 git fetch origin
 git status --short --branch
 docker compose build
-OOD_AUTH_MODE=ntu-sso OOD_DEX_CLIENT_SECRET='rotated-secret' docker compose up -d
-docker compose logs -f
+docker compose up -d ondemand-prod
+docker compose logs -f ondemand-prod
 ```
 
 Because this branch is currently behind upstream, merge or rebase upstream work

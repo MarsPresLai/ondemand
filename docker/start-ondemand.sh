@@ -6,6 +6,19 @@ CONFIG_SOURCE="/workspace/ondemand/docker/config"
 OOD_TEMPLATE="/workspace/ondemand/docker/config/ood_portal.${AUTH_MODE}.yml"
 DEX_TEMPLATE="/workspace/ondemand/docker/config/dex/config.${AUTH_MODE}.yaml"
 DEX_CERT_SOURCE="/workspace/ondemand/docker/config/dex/adfs-ntu.crt"
+APP_OWNER="${OOD_CONTAINER_USER:-ooddev}"
+
+if ! id "$APP_OWNER" >/dev/null 2>&1; then
+  APP_OWNER="$(stat -c '%U' /workspace/ondemand 2>/dev/null || true)"
+fi
+
+if ! id "$APP_OWNER" >/dev/null 2>&1; then
+  APP_OWNER="$(awk -F: '$3 >= 1000 && $3 < 60000 { print $1; exit }' /etc/passwd)"
+fi
+
+if [ -z "$APP_OWNER" ]; then
+  APP_OWNER="root"
+fi
 
 render_template() {
   local source="$1"
@@ -18,6 +31,8 @@ render_template() {
   render_placeholder "$target" "__OOD_LOCAL_PASSWORD__" "OOD_LOCAL_PASSWORD"
   render_placeholder "$target" "__OOD_LOCAL_PASSWORD_HASH__" "OOD_LOCAL_PASSWORD_HASH"
   render_placeholder "$target" "__OOD_LOCAL_USER_ID__" "OOD_LOCAL_USER_ID"
+  render_placeholder "$target" "__OOD_LOCAL_BASE_URL__" "OOD_LOCAL_BASE_URL"
+  render_placeholder "$target" "__OOD_LOCAL_HTTP_PORT__" "OOD_LOCAL_HTTP_PORT"
 }
 
 render_placeholder() {
@@ -78,10 +93,10 @@ build_dashboard_assets() {
 
   mkdir -p "$dashboard_dir/app/assets/builds" "$dashboard_dir/tmp"
   mkdir -p "$dashboard_dir/tmp/cache/assets"
-  chown -R misaki:misaki "$dashboard_dir/app/assets/builds" "$dashboard_dir/tmp" "$dashboard_dir/node_modules" 2>/dev/null || true
-  chmod 1777 "$dashboard_dir/tmp" "$dashboard_dir/tmp/cache" "$dashboard_dir/tmp/cache/assets" 2>/dev/null || true
-  chmod 1777 "$dashboard_dir/app/assets/builds" 2>/dev/null || true
-  find "$dashboard_dir/tmp/cache/assets" -type d -exec chmod 1777 {} + 2>/dev/null || true
+  chown -R "$APP_OWNER:$APP_OWNER" "$dashboard_dir/app/assets/builds" "$dashboard_dir/tmp" "$dashboard_dir/node_modules" 2>/dev/null || true
+  chmod 777 "$dashboard_dir/tmp" "$dashboard_dir/tmp/cache" "$dashboard_dir/tmp/cache/assets" 2>/dev/null || true
+  chmod 777 "$dashboard_dir/app/assets/builds" 2>/dev/null || true
+  find "$dashboard_dir/tmp/cache/assets" -type d -exec chmod 777 {} + 2>/dev/null || true
   find "$dashboard_dir/tmp/cache/assets" -type f -exec chmod 666 {} + 2>/dev/null || true
 
   su -s /bin/bash -c "
@@ -90,9 +105,31 @@ build_dashboard_assets() {
     npm install --no-package-lock --no-fund --no-audit >/tmp/dashboard-npm-install.log 2>&1
     npm run build >/tmp/dashboard-npm-build.log 2>&1
     npm run build:css >/tmp/dashboard-npm-css.log 2>&1
-  " misaki
+  " "$APP_OWNER"
 }
 
+install_sys_app_bundles() {
+  local app
+
+  for app in dashboard myjobs; do
+    local app_dir="/var/www/ood/apps/sys/$app"
+
+    if [ ! -f "$app_dir/Gemfile" ]; then
+      continue
+    fi
+
+    mkdir -p "$app_dir/.bundle" "$app_dir/vendor" "$app_dir/tmp" "$app_dir/log"
+    chown -R "$APP_OWNER:$APP_OWNER" "$app_dir/.bundle" "$app_dir/vendor" "$app_dir/tmp" "$app_dir/log" 2>/dev/null || true
+
+    su -s /bin/bash -c "
+      set -euo pipefail
+      cd '$app_dir'
+      bundle check || bundle install --jobs 4 --retry 2
+    " "$APP_OWNER"
+  done
+}
+
+install_sys_app_bundles
 build_dashboard_assets
 
 /opt/ood/ood-portal-generator/sbin/update_ood_portal
@@ -104,6 +141,9 @@ fi
 # The container sits behind the host's TLS terminator, so serve plain HTTP on
 # the internal port and let Apache talk to the local Dex instance directly.
 sed -i 's#<VirtualHost \*:443>#<VirtualHost *:18080>#' /etc/httpd/conf.d/ood-portal.conf
+if [ "$AUTH_MODE" = "local" ] && [ -n "${OOD_LOCAL_HTTP_PORT:-}" ]; then
+  sed -i "s#<VirtualHost \\*:${OOD_LOCAL_HTTP_PORT}>#<VirtualHost *:18080>#" /etc/httpd/conf.d/ood-portal.conf
+fi
 sed -i '/Header always set Strict-Transport-Security/d' /etc/httpd/conf.d/ood-portal.conf
 sed -i '/SSLEngine On/d' /etc/httpd/conf.d/ood-portal.conf
 sed -i '/SSLCertificateFile/d' /etc/httpd/conf.d/ood-portal.conf
@@ -113,7 +153,7 @@ sed -i 's#^  OIDCProviderMetadataURL .*#  OIDCProviderMetadataURL http://localho
 # Keep the custom public landing page as the first page, matching the live site.
 sed -i '/RedirectMatch \^\/\$ "\/pun\/sys\/dashboard"/d' /etc/httpd/conf.d/ood-portal.conf
 sed -i '/RewriteRule \^\/\$ \/public\/index.html \[PT,L\]/d' /etc/httpd/conf.d/ood-portal.conf
-sed -i '/RewriteRule \^(.\*) http:\/\/localhost:18080\$1 \[R=301,NE,L\]/a\  RewriteRule ^/$ /public/index.html [PT,L]' /etc/httpd/conf.d/ood-portal.conf
+sed -i '/RewriteRule \^(.\*) .* \[R=301,NE,L\]/a\  RewriteRule ^/$ /public/index.html [PT,L]' /etc/httpd/conf.d/ood-portal.conf
 
 if [ -f "$DEX_TEMPLATE" ]; then
   mkdir -p /etc/ood/dex
