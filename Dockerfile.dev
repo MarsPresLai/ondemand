@@ -13,7 +13,7 @@ RUN cp /etc/yum.repos.d/ondemand-web.repo /etc/yum.repos.d/ondemand-nightly-web.
           -e 's/ondemand-web/ondemand-web-nightly/g' > /etc/yum.repos.d/ondemand-nightly-web.repo
 
 RUN dnf -y update && \
-    dnf install -y dnf-utils && \
+    dnf install -y dnf-utils git && \
     dnf config-manager --set-enabled powertools && \
     dnf -y module enable nodejs:22 ruby:3.3 && \
     dnf install -y epel-release && \
@@ -33,6 +33,7 @@ RUN sed -i 's#^CREATE_MAIL_SPOOL=yes#CREATE_MAIL_SPOOL=no#' /etc/default/useradd
 
 RUN sed -i 's|--rpm|--rpm -f --insecure|g' /etc/systemd/system/httpd.service.d/ood-portal.conf
 RUN systemctl enable httpd ondemand-dex
+RUN /usr/libexec/httpd-ssl-gencerts
 
 CMD [ "/sbin/init" ]
 

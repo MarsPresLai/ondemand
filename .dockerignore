@@ -1,0 +1,14 @@
+.git
+.github
+apps/dashboard/node_modules
+apps/dashboard/log
+apps/dashboard/tmp
+apps/dashboard/public/assets
+apps/dashboard/app/assets/builds
+apps/myjobs/log
+apps/myjobs/tmp
+apps/myjobs/public/assets
+apps/shell/node_modules
+apps/shell/tmp
+coverage
+spec/reports

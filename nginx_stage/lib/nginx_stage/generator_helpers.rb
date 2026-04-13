@@ -14,13 +14,14 @@ module NginxStage
           required: true,
           before_init: -> (user) do
             raise InvalidUser, "invalid user name syntax: #{user}" unless user =~ NginxStage.user_regex
-            user ? User.new(user) : nil
+            user
           end
         }
       end
 
       # Validate that the user isn't a special user (i.e., `root`)
       self.add_hook :validate_user_not_special do
+        @user = User.new(user) unless user.is_a?(User)
         min_uid = NginxStage.min_uid
         if user.uid < min_uid
           raise InvalidUser, "user is special: #{user} (#{user.uid} < #{min_uid})"

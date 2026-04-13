@@ -1,0 +1,16 @@
+---
+servername: localhost
+port: 18080
+listen_addr_port: 18080
+oidc_remote_user_claim: email
+dex:
+  client_id: localhost
+  client_secret: __OOD_LOCAL_DEX_CLIENT_SECRET__
+  static_passwords:
+    - email: misaki@localhost
+      password: __OOD_LOCAL_PASSWORD__
+      username: misaki
+      userID: __OOD_LOCAL_USER_ID__
+rnode_uri: /rnode
+node_uri: /node
+host_regex: 'localhost'

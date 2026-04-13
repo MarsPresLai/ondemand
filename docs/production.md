@@ -1,0 +1,63 @@
+# Production Deployment Notes
+
+This repo should not contain live production secrets. Treat the NTU SSO Dex
+client secret that was previously committed as exposed and rotate it before
+pushing this branch to GitHub.
+
+## Secret handling
+
+Keep these values outside git:
+
+- `OOD_DEX_CLIENT_SECRET`
+- TLS private keys
+- IdP client secrets
+- Any generated Rails `SECRET_KEY_BASE` for production
+- Host-specific override files
+
+For the Docker workflow, provide the Dex client secret through the environment:
+
+```bash
+export OOD_AUTH_MODE=ntu-sso
+export OOD_DEX_CLIENT_SECRET='replace-with-rotated-secret'
+export OOD_LOCAL_DEX_CLIENT_SECRET='replace-with-rotated-local-secret'
+export OOD_LOCAL_PASSWORD='replace-with-rotated-local-password'
+export OOD_LOCAL_PASSWORD_HASH='replace-with-rotated-local-bcrypt-hash'
+export OOD_LOCAL_USER_ID='replace-with-rotated-local-user-id'
+docker compose up -d
+```
+
+For a non-Docker host deployment, use the same principle: copy the tracked
+templates into `/etc/ood/config` and `/etc/ood/dex`, replace placeholders on the
+host, and keep the rendered files owned by root with restrictive permissions.
+Do not copy rendered production config back into this repository.
+
+## GitHub push checklist
+
+Before pushing:
+
+```bash
+git status --short
+git diff --check
+git log --all -S'old-secret-value' --oneline
+rg -n -i --hidden --glob '!.git/**' --glob '!node_modules/**' --glob '!vendor/**' \
+  '(client_secret:|private[_-]?key|api[_-]?key|password:|token:|AKIA|github_pat_|ghp_|sk-)'
+```
+
+If `git log -S` finds a real secret in history, rotate the secret. Removing it
+from the latest commit is not enough once it has existed in commit history.
+
+## Deploying from this repo
+
+Recommended flow:
+
+```bash
+git fetch origin
+git status --short --branch
+docker compose build
+OOD_AUTH_MODE=ntu-sso OOD_DEX_CLIENT_SECRET='rotated-secret' docker compose up -d
+docker compose logs -f
+```
+
+Because this branch is currently behind upstream, merge or rebase upstream work
+in a separate branch and retest SSO before using it as the live deployment
+source.

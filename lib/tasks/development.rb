@@ -2,6 +2,7 @@
 
 namespace :dev do
   require_relative 'rake_helper'
+  require 'securerandom'
   require 'yaml'
   include RakeHelper
 
@@ -38,7 +39,7 @@ namespace :dev do
             'email'    => "#{user.name}@localhost",
             'password' => plain_password,
             'username' => user.name.to_s,
-            'userID'   => '71e63e31-7af3-41d7-add2-575568f4525f'
+            'userID'   => SecureRandom.uuid
           }]
         }
       }.to_yaml)

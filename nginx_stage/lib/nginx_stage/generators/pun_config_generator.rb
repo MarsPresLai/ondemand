@@ -27,11 +27,6 @@ module NginxStage
     # Accepts `user` as an option and validates user
     add_user_support
 
-    # Block starting up PUNs for users with disabled shells
-    add_hook :block_user_with_disabled_shell do
-      raise InvalidUser, NginxStage.disabled_shell_message % user if user.shell == NginxStage.disabled_shell
-    end
-
     # Accepts `skip_nginx` as an option
     add_skip_nginx_support
 
@@ -120,6 +115,23 @@ module NginxStage
           log.error "#{pre_hook_root_cmd} threw exception '#{e.message}' for #{user}"
         end
       end
+    end
+
+    # The pre-hook may provision the Unix account, so only resolve and validate
+    # the user after the hook has had a chance to run.
+    rem_hook :validate_user_not_special
+    add_hook :validate_user_not_special do
+      @user = User.new(user) unless user.is_a?(User)
+      min_uid = NginxStage.min_uid
+      if user.uid < min_uid
+        raise InvalidUser, "user is special: #{user} (#{user.uid} < #{min_uid})"
+      end
+    end
+
+    # Block starting up PUNs for users with disabled shells only after the
+    # account has been resolved, because the pre-hook may create it.
+    add_hook :block_user_with_disabled_shell do
+      raise InvalidUser, NginxStage.disabled_shell_message % user if user.shell == NginxStage.disabled_shell
     end
 
     # Generate the per-user NGINX config from the 'pun.conf.erb' template

@@ -55,6 +55,7 @@ apps/dashboard/.ruby-version
 
 # SSHFS
 ._*
+.nfs*
 
 .DS_Store
 
@@ -121,3 +122,11 @@ tags
 
 # Ignore .vscode
 .vscode
+
+# Local deployment/runtime secrets.
+/.env
+/.env.*
+!/hooks/hook.env.example
+/docker/config/**/*.secret.*
+/docker/config/**/*.local-secret.*
+/docker/config/**/*.private.*

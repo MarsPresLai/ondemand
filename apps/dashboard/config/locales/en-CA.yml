@@ -295,6 +295,7 @@ en-CA:
     recently_used_apps_title: Recently Used Apps
     remove: Remove
     reset: Reset
+    restore: Restore
     restart_msg_html: |
       Your group membership has changed, which affects your access to apps. Your dashboard should restart automatically.
       If it doesn't please, click: <a href="%{restart_url}">restart web server</a>.

@@ -1,0 +1,31 @@
+---
+servername: eecorehpc.ee.ntu.edu.tw
+port: 443
+listen_addr_port: 18080
+user_map_match: "^([^@]+)@ntu\\.edu\\.tw$"
+oidc_remote_user_claim: email
+dex:
+  client_id: eecorehpc.ee.ntu.edu.tw
+  client_secret: __OOD_DEX_CLIENT_SECRET__
+  client_redirect_uris:
+    - https://eecorehpc.ee.ntu.edu.tw/oidc
+    - https://eecorehpc.ee.ntu.edu.tw:443/oidc
+  connectors:
+    - type: saml
+      id: ntu-adfs
+      name: 台大帳號 (NTU SSO)
+      config:
+        ssoURL: https://adfs.ntu.edu.tw/adfs/ls/
+        ca: /etc/ood/dex/adfs-ntu.crt
+        redirectURI: https://eecorehpc.ee.ntu.edu.tw/dex/callback
+        entityIssuer: https://eecorehpc.ee.ntu.edu.tw/dex/callback
+        userIDAttr: "http://www.ntu.edu.tw/AccountName"
+        usernameAttr: "http://www.ntu.edu.tw/AccountName"
+        nameAttr: "http://www.ntu.edu.tw/ChineseName"
+        emailAttr: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+        nameIDPolicyFormat: unspecified
+rnode_uri: /rnode
+node_uri: /node
+host_regex: '[^/]+'
+pun_pre_hook_root_cmd: /workspace/ondemand/bin/ood_pun_pre_hook.sh
+pun_pre_hook_exports: OIDC_CLAIM_email,OIDC_CLAIM_name

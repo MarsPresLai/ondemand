@@ -1,0 +1,33 @@
+issuer: http://localhost:18080/dex
+storage:
+  type: sqlite3
+  config:
+    file: /etc/ood/dex/dex.db
+web:
+  http: 0.0.0.0:5556
+telemetry:
+  http: 0.0.0.0:5558
+staticClients:
+  - id: localhost
+    redirectURIs:
+      - http://localhost:18080/oidc
+    name: OnDemand
+    secret: __OOD_LOCAL_DEX_CLIENT_SECRET__
+oauth2:
+  skipApprovalScreen: true
+  alwaysShowLoginScreen: false
+connectors:
+  - type: saml
+    id: ntu-adfs
+    name: 台大帳號 (NTU SSO)
+    config:
+      ssoURL: https://adfs.ntu.edu.tw/adfs/ls/
+      ca: /etc/ood/dex/adfs-ntu.crt
+      redirectURI: http://localhost:18080/dex/callback
+      entityIssuer: http://localhost:18080/dex/callback
+      usernameAttr: "http://www.ntu.edu.tw/AccountName"
+      emailAttr: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+      nameIDPolicyFormat: unspecified
+frontend:
+  dir: /usr/share/ondemand-dex/web
+  theme: ondemand

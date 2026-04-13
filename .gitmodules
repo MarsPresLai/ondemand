@@ -1,0 +1,4 @@
+[submodule "vendor/ondemand-dex"]
+	path = vendor/ondemand-dex
+	url = https://github.com/MarsPresLai/ondemand-dex.git
+	branch = saml-useridattr-fallback
