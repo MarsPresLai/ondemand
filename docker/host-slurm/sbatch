@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+
+cmd="$(basename "$0")"
+run_as="${SUDO_USER:-${USER:-$(id -un)}}"
+
+exec sudo -n /usr/bin/nsenter -t 1 -m -u -i -n -p -- \
+  /usr/bin/sudo -n -u "$run_as" /opt/hpc/slurm/bin/"$cmd" "$@"

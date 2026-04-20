@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "Checking shell syntax"
+bash -n "$ROOT/docker/start-ondemand.sh"
+
+echo "Checking tracked YAML"
+ruby -ryaml -e '
+  ARGV.each { |path| YAML.safe_load_file(path, aliases: true) }
+' \
+  "$ROOT/docker/config/ood_portal.local.yml" \
+  "$ROOT/docker/config/ood_portal.ntu-sso.yml" \
+  "$ROOT/docker/config/dex/config.local.yaml" \
+  "$ROOT/docker/config/dex/config.ntu-sso.yaml" \
+  "$ROOT/docker/config/clusters.d/localhost.yml"
+
+echo "Checking rendered Slurm cluster template"
+tmp="$(mktemp)"
+trap 'rm -f "$tmp"' EXIT
+sed \
+  -e 's#__OOD_SLURM_CLUSTER_TITLE__#EE Core HPC#g' \
+  -e 's#__OOD_SLURM_LOGIN_HOST__#eecorehpc.ee.ntu.edu.tw#g' \
+  -e 's#__OOD_SLURM_CLUSTER_OPTION__#cluster: "eecorehpc"#g' \
+  -e 's#__OOD_SLURM_SUBMIT_HOST_OPTION__#submit_host: "eecorehpc.ee.ntu.edu.tw"#g' \
+  -e 's#__OOD_SLURM_BIN__#/opt/hpc/slurm/bin#g' \
+  -e 's#__OOD_SLURM_CONF__#/etc/slurm/slurm.conf#g' \
+  -e 's#__OOD_SLURM_VNC_MODULE__#ondemand-vnc#g' \
+  "$ROOT/docker/config/clusters.d/slurm.yml.template" > "$tmp"
+ruby -ryaml -e 'YAML.safe_load_file(ARGV.fetch(0), aliases: true)' "$tmp"
+
+echo "Checking Docker Compose configuration"
+docker compose -f "$ROOT/docker-compose.yml" config --quiet
+
+echo "OK"

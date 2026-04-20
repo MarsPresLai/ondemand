@@ -126,6 +126,7 @@ tags
 # Local deployment/runtime secrets.
 /.env
 /.env.*
+!/.env.example
 !/hooks/hook.env.example
 /docker/config/**/*.secret.*
 /docker/config/**/*.local-secret.*

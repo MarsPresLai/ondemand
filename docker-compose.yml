@@ -8,6 +8,7 @@ x-ondemand-common: &ondemand-common
       GID: ${OOD_DEV_GID:-1000}
   hostname: localhost
   cgroup: host
+  pid: host
   privileged: true
   tmpfs:
     - /run
@@ -25,8 +26,13 @@ x-ondemand-common: &ondemand-common
     - ./apps/shell:/var/www/ood/apps/sys/shell
     - ./apps/bc_desktop:/var/www/ood/apps/sys/bc_desktop
     - ./nginx_stage:/opt/ood/nginx_stage
+    - ./docker/host-slurm:/usr/local/host-slurm:ro
     - ./docker/start-ondemand.sh:/usr/local/bin/start-ondemand.sh:ro
     - ./docker/bin/ondemand-dex:/usr/sbin/ondemand-dex:ro
+    - /etc/slurm:/etc/slurm:ro
+    - /opt/hpc/slurm:/opt/hpc/slurm:ro
+    - /opt/hpc/slurm-25.05.3:/opt/hpc/slurm-25.05.3:ro
+    - /run/munge:/run/munge
     - ./:/workspace/ondemand
   working_dir: /workspace/ondemand
   command: ["/usr/local/bin/start-ondemand.sh"]
@@ -40,6 +46,15 @@ services:
       OOD_CONTAINER_USER: ${OOD_DEV_USER:-ooddev}
       OOD_AUTH_MODE: ntu-sso
       OOD_DEX_CLIENT_SECRET: ${OOD_DEX_CLIENT_SECRET:-}
+      OOD_ENABLE_SLURM: ${OOD_ENABLE_SLURM:-false}
+      OOD_SLURM_CLUSTER_ID: ${OOD_SLURM_CLUSTER_ID:-eecorehpc}
+      OOD_SLURM_CLUSTER_TITLE: ${OOD_SLURM_CLUSTER_TITLE:-EE Core HPC}
+      OOD_SLURM_CLUSTER_NAME: ${OOD_SLURM_CLUSTER_NAME:-}
+      OOD_SLURM_LOGIN_HOST: ${OOD_SLURM_LOGIN_HOST:-eecorehpc.ee.ntu.edu.tw}
+      OOD_SLURM_SUBMIT_HOST: ${OOD_SLURM_SUBMIT_HOST-}
+      OOD_SLURM_BIN: ${OOD_SLURM_BIN:-/opt/hpc/slurm/bin}
+      OOD_SLURM_CONF: ${OOD_SLURM_CONF:-/etc/slurm/slurm.conf}
+      OOD_SLURM_VNC_MODULE: ${OOD_SLURM_VNC_MODULE:-ondemand-vnc}
     ports:
       - "${OOD_PROD_HTTP_PORT:-18080}:18080"
       - "${OOD_PROD_DEX_PORT:-15556}:5556"
@@ -58,6 +73,15 @@ services:
       OOD_LOCAL_PASSWORD: ${OOD_LOCAL_PASSWORD:-}
       OOD_LOCAL_PASSWORD_HASH: ${OOD_LOCAL_PASSWORD_HASH:-}
       OOD_LOCAL_USER_ID: ${OOD_LOCAL_USER_ID:-}
+      OOD_ENABLE_SLURM: ${OOD_ENABLE_SLURM:-false}
+      OOD_SLURM_CLUSTER_ID: ${OOD_SLURM_CLUSTER_ID:-eecorehpc}
+      OOD_SLURM_CLUSTER_TITLE: ${OOD_SLURM_CLUSTER_TITLE:-EE Core HPC}
+      OOD_SLURM_CLUSTER_NAME: ${OOD_SLURM_CLUSTER_NAME:-}
+      OOD_SLURM_LOGIN_HOST: ${OOD_SLURM_LOGIN_HOST:-eecorehpc.ee.ntu.edu.tw}
+      OOD_SLURM_SUBMIT_HOST: ${OOD_SLURM_SUBMIT_HOST-}
+      OOD_SLURM_BIN: ${OOD_SLURM_BIN:-/opt/hpc/slurm/bin}
+      OOD_SLURM_CONF: ${OOD_SLURM_CONF:-/etc/slurm/slurm.conf}
+      OOD_SLURM_VNC_MODULE: ${OOD_SLURM_VNC_MODULE:-ondemand-vnc}
     ports:
       - "${OOD_DEV_HTTP_PORT:-18081}:18080"
       - "${OOD_DEV_DEX_PORT:-15557}:5556"

@@ -43,6 +43,15 @@ OOD_LOCAL_DEX_CLIENT_SECRET=replace-with-local-secret
 OOD_LOCAL_PASSWORD=replace-with-local-password
 OOD_LOCAL_PASSWORD_HASH=replace-with-bcrypt-hash
 OOD_LOCAL_USER_ID=replace-with-local-user-id
+OOD_ENABLE_SLURM=false
+OOD_SLURM_CLUSTER_ID=eecorehpc
+OOD_SLURM_CLUSTER_TITLE=EE Core HPC
+OOD_SLURM_CLUSTER_NAME=
+OOD_SLURM_LOGIN_HOST=eecorehpc.ee.ntu.edu.tw
+OOD_SLURM_SUBMIT_HOST=eecorehpc.ee.ntu.edu.tw
+OOD_SLURM_BIN=/opt/hpc/slurm/bin
+OOD_SLURM_CONF=/etc/slurm/slurm.conf
+OOD_SLURM_VNC_MODULE=ondemand-vnc
 ```
 
 Then run:
@@ -77,3 +86,20 @@ rg -n -i --hidden --glob '!.git/**' --glob '!node_modules/**' --glob '!vendor/**
 
 Expected intentional matches include example files and tests. Real deployment
 values belong in `.env` or the server's secret manager, not in tracked YAML.
+
+## Slurm development
+
+Leave `OOD_ENABLE_SLURM=false` until the dev container can access the Slurm
+client configuration it needs. When ready, set `OOD_ENABLE_SLURM=true`, then run:
+
+```bash
+bin/validate-ood-config
+docker compose build ondemand-dev
+docker compose --profile dev up -d ondemand-dev
+docker compose --profile dev exec ondemand-dev \
+  ruby -ryaml -e 'c=YAML.safe_load_file("/etc/ood/config/clusters.d/eecorehpc.yml", aliases: true); abort unless c.dig("v2", "job", "submit_host")'
+ssh eecorehpc.ee.ntu.edu.tw /opt/hpc/slurm/bin/scontrol ping
+```
+
+The full dev-to-production Slurm checklist is in
+[`docs/slurm-ood-setup.md`](slurm-ood-setup.md).

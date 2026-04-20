@@ -17,7 +17,7 @@ RUN dnf -y update && \
     dnf config-manager --set-enabled powertools && \
     dnf -y module enable nodejs:22 ruby:3.3 && \
     dnf install -y epel-release && \
-    dnf install -y ondemand ondemand-dex && \
+    dnf install -y ondemand ondemand-dex slurm munge && \
     dnf install -y gcc gcc-c++ libyaml-devel nc xz && \
     dnf clean all && rm -rf /var/cache/dnf/*
 

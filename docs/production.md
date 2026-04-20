@@ -26,6 +26,15 @@ export OOD_LOCAL_DEX_CLIENT_SECRET='replace-with-rotated-local-secret'
 export OOD_LOCAL_PASSWORD='replace-with-rotated-local-password'
 export OOD_LOCAL_PASSWORD_HASH='replace-with-rotated-local-bcrypt-hash'
 export OOD_LOCAL_USER_ID='replace-with-rotated-local-user-id'
+export OOD_ENABLE_SLURM=true
+export OOD_SLURM_CLUSTER_ID=eecorehpc
+export OOD_SLURM_CLUSTER_TITLE='EE Core HPC'
+export OOD_SLURM_CLUSTER_NAME=
+export OOD_SLURM_LOGIN_HOST=eecorehpc.ee.ntu.edu.tw
+export OOD_SLURM_SUBMIT_HOST=eecorehpc.ee.ntu.edu.tw
+export OOD_SLURM_BIN=/opt/hpc/slurm/bin
+export OOD_SLURM_CONF=/etc/slurm/slurm.conf
+export OOD_SLURM_VNC_MODULE=ondemand-vnc
 docker compose up -d ondemand-prod
 ```
 
@@ -56,7 +65,8 @@ Recommended flow:
 ```bash
 git fetch origin
 git status --short --branch
-docker compose build
+bin/validate-ood-config
+docker compose build ondemand-prod
 docker compose up -d ondemand-prod
 docker compose logs -f ondemand-prod
 ```
@@ -64,3 +74,11 @@ docker compose logs -f ondemand-prod
 Because this branch is currently behind upstream, merge or rebase upstream work
 in a separate branch and retest SSO before using it as the live deployment
 source.
+
+## Slurm rollout
+
+Slurm is rendered into `/etc/ood/config/clusters.d/<OOD_SLURM_CLUSTER_ID>.yml`
+only when `OOD_ENABLE_SLURM=true`. Test it in `ondemand-dev` first, then start
+`ondemand-prod` from the same `.env` values after validation passes.
+
+The exact checklist is in [`docs/slurm-ood-setup.md`](slurm-ood-setup.md).

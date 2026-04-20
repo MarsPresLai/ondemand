@@ -8,17 +8,44 @@ DEX_TEMPLATE="/workspace/ondemand/docker/config/dex/config.${AUTH_MODE}.yaml"
 DEX_CERT_SOURCE="/workspace/ondemand/docker/config/dex/adfs-ntu.crt"
 APP_OWNER="${OOD_CONTAINER_USER:-ooddev}"
 
-if ! id "$APP_OWNER" >/dev/null 2>&1; then
-  APP_OWNER="$(stat -c '%U' /workspace/ondemand 2>/dev/null || true)"
-fi
+resolve_app_owner() {
+  local workspace="/workspace/ondemand"
+  local owner_uid owner_gid owner_name owner_group
 
-if ! id "$APP_OWNER" >/dev/null 2>&1; then
-  APP_OWNER="$(awk -F: '$3 >= 1000 && $3 < 60000 { print $1; exit }' /etc/passwd)"
-fi
+  owner_uid="$(stat -c '%u' "$workspace" 2>/dev/null || true)"
+  owner_gid="$(stat -c '%g' "$workspace" 2>/dev/null || true)"
 
-if [ -z "$APP_OWNER" ]; then
-  APP_OWNER="root"
-fi
+  if [ -n "$owner_uid" ] && [ -n "$owner_gid" ] && [ "$owner_uid" != "0" ]; then
+    owner_name="$(getent passwd "$owner_uid" | cut -d: -f1 || true)"
+    if [ -z "$owner_name" ]; then
+      owner_group="$(getent group "$owner_gid" | cut -d: -f1 || true)"
+      if [ -z "$owner_group" ]; then
+        owner_group="oodhost"
+        groupadd -g "$owner_gid" "$owner_group"
+      fi
+
+      owner_name="oodhost"
+      if getent passwd "$owner_name" >/dev/null 2>&1; then
+        owner_name="oodhost${owner_uid}"
+      fi
+
+      useradd -l -u "$owner_uid" --create-home --gid "$owner_gid" --shell /bin/bash "$owner_name"
+    fi
+
+    APP_OWNER="$owner_name"
+    return
+  fi
+
+  if ! id "$APP_OWNER" >/dev/null 2>&1; then
+    APP_OWNER="$(awk -F: '$3 >= 1000 && $3 < 60000 { print $1; exit }' /etc/passwd)"
+  fi
+
+  if [ -z "$APP_OWNER" ]; then
+    APP_OWNER="root"
+  fi
+}
+
+resolve_app_owner
 
 render_template() {
   local source="$1"
@@ -33,6 +60,13 @@ render_template() {
   render_placeholder "$target" "__OOD_LOCAL_USER_ID__" "OOD_LOCAL_USER_ID"
   render_placeholder "$target" "__OOD_LOCAL_BASE_URL__" "OOD_LOCAL_BASE_URL"
   render_placeholder "$target" "__OOD_LOCAL_HTTP_PORT__" "OOD_LOCAL_HTTP_PORT"
+  render_placeholder "$target" "__OOD_SLURM_CLUSTER_TITLE__" "OOD_SLURM_CLUSTER_TITLE"
+  render_placeholder "$target" "__OOD_SLURM_LOGIN_HOST__" "OOD_SLURM_LOGIN_HOST"
+  render_placeholder "$target" "__OOD_SLURM_BIN__" "OOD_SLURM_BIN"
+  render_placeholder "$target" "__OOD_SLURM_CONF__" "OOD_SLURM_CONF"
+  render_placeholder "$target" "__OOD_SLURM_VNC_MODULE__" "OOD_SLURM_VNC_MODULE"
+  render_slurm_cluster_option "$target"
+  render_slurm_submit_host_option "$target"
 }
 
 render_placeholder() {
@@ -56,6 +90,93 @@ render_placeholder() {
   sed -i "s#${token}#${escaped}#g" "$target"
 }
 
+render_slurm_cluster_option() {
+  local target="$1"
+  local token="__OOD_SLURM_CLUSTER_OPTION__"
+
+  if ! grep -q "$token" "$target"; then
+    return
+  fi
+
+  local cluster="${OOD_SLURM_CLUSTER_NAME:-}"
+  if [ -z "$cluster" ]; then
+    sed -i "/${token}/d" "$target"
+    return
+  fi
+
+  local escaped="${cluster//\\/\\\\}"
+  escaped="${escaped//&/\\&}"
+  escaped="${escaped//#/\\#}"
+  sed -i "s#${token}#cluster: \"${escaped}\"#g" "$target"
+}
+
+render_slurm_submit_host_option() {
+  local target="$1"
+  local token="__OOD_SLURM_SUBMIT_HOST_OPTION__"
+
+  if ! grep -q "$token" "$target"; then
+    return
+  fi
+
+  local submit_host="${OOD_SLURM_SUBMIT_HOST:-}"
+  if [ -z "$submit_host" ]; then
+    sed -i "/${token}/d" "$target"
+    return
+  fi
+
+  local escaped="${submit_host//\\/\\\\}"
+  escaped="${escaped//&/\\&}"
+  escaped="${escaped//#/\\#}"
+  sed -i "s#${token}#submit_host: \"${escaped}\"#g" "$target"
+}
+
+prepare_cluster_config() {
+  mkdir -p /etc/ood/config/clusters.d
+
+  if [ -d "$CONFIG_SOURCE/clusters.d" ]; then
+    find "$CONFIG_SOURCE/clusters.d" -maxdepth 1 -type f -name '*.yml' \
+      -exec cp {} /etc/ood/config/clusters.d/ \;
+  fi
+
+  if [ "${OOD_ENABLE_SLURM:-false}" != "true" ]; then
+    return
+  fi
+
+  rm -f /etc/ood/config/clusters.d/localhost.yml
+
+  local template="$CONFIG_SOURCE/clusters.d/slurm.yml.template"
+  if [ ! -f "$template" ]; then
+    echo "Missing Slurm cluster template: $template" >&2
+    exit 1
+  fi
+
+  OOD_SLURM_CLUSTER_ID="${OOD_SLURM_CLUSTER_ID:-eecorehpc}"
+  OOD_SLURM_CLUSTER_TITLE="${OOD_SLURM_CLUSTER_TITLE:-EE Core HPC}"
+  OOD_SLURM_LOGIN_HOST="${OOD_SLURM_LOGIN_HOST:-eecorehpc.ee.ntu.edu.tw}"
+  OOD_SLURM_SUBMIT_HOST="${OOD_SLURM_SUBMIT_HOST-}"
+  OOD_SLURM_BIN="${OOD_SLURM_BIN:-/opt/hpc/slurm/bin}"
+  OOD_SLURM_CONF="${OOD_SLURM_CONF:-/etc/slurm/slurm.conf}"
+  OOD_SLURM_VNC_MODULE="${OOD_SLURM_VNC_MODULE:-ondemand-vnc}"
+
+  export OOD_SLURM_CLUSTER_ID
+  export OOD_SLURM_CLUSTER_TITLE
+  export OOD_SLURM_LOGIN_HOST
+  export OOD_SLURM_SUBMIT_HOST
+  export OOD_SLURM_BIN
+  export OOD_SLURM_CONF
+  export OOD_SLURM_VNC_MODULE
+
+  render_template "$template" "/etc/ood/config/clusters.d/${OOD_SLURM_CLUSTER_ID}.yml"
+
+  if [ -n "$OOD_SLURM_SUBMIT_HOST" ] && command -v ssh-keyscan >/dev/null 2>&1; then
+    mkdir -p /etc/ssh
+    touch /etc/ssh/ssh_known_hosts
+    ssh-keyscan -H "$OOD_SLURM_SUBMIT_HOST" >> /etc/ssh/ssh_known_hosts 2>/dev/null || true
+    sort -u /etc/ssh/ssh_known_hosts -o /etc/ssh/ssh_known_hosts
+    chmod 644 /etc/ssh/ssh_known_hosts
+  fi
+}
+
 if [ ! -f "$OOD_TEMPLATE" ]; then
   echo "Missing OOD auth template: $OOD_TEMPLATE" >&2
   exit 1
@@ -72,8 +193,14 @@ if [ -d "$CONFIG_SOURCE/apps" ]; then
   cp -a "$CONFIG_SOURCE/apps" /etc/ood/config/
 fi
 
-if [ -d "$CONFIG_SOURCE/clusters.d" ]; then
-  cp -a "$CONFIG_SOURCE/clusters.d" /etc/ood/config/
+prepare_cluster_config
+
+if [ -d /usr/local/host-slurm ] && command -v sudo >/dev/null 2>&1 && command -v nsenter >/dev/null 2>&1; then
+  cat > /etc/sudoers.d/ood-host-slurm <<'EOF'
+Defaults!/usr/bin/nsenter !requiretty
+ALL ALL=(root) NOPASSWD: /usr/bin/nsenter *
+EOF
+  chmod 440 /etc/sudoers.d/ood-host-slurm
 fi
 
 render_template "$OOD_TEMPLATE" /etc/ood/config/ood_portal.yml
