@@ -195,7 +195,12 @@ fi
 
 prepare_cluster_config
 
-if [ -d /usr/local/host-slurm ] && command -v sudo >/dev/null 2>&1 && command -v nsenter >/dev/null 2>&1; then
+if [ -d "$CONFIG_SOURCE/../host-slurm" ] && command -v sudo >/dev/null 2>&1 && command -v nsenter >/dev/null 2>&1; then
+  rm -rf /usr/local/host-slurm
+  mkdir -p /usr/local/host-slurm
+  cp "$CONFIG_SOURCE/../host-slurm/"* /usr/local/host-slurm/
+  chmod 755 /usr/local/host-slurm/*
+
   cat > /etc/sudoers.d/ood-host-slurm <<'EOF'
 Defaults!/usr/bin/nsenter !requiretty
 ALL ALL=(root) NOPASSWD: /usr/bin/nsenter *

@@ -26,7 +26,6 @@ x-ondemand-common: &ondemand-common
     - ./apps/shell:/var/www/ood/apps/sys/shell
     - ./apps/bc_desktop:/var/www/ood/apps/sys/bc_desktop
     - ./nginx_stage:/opt/ood/nginx_stage
-    - ./docker/host-slurm:/usr/local/host-slurm:ro
     - ./docker/start-ondemand.sh:/usr/local/bin/start-ondemand.sh:ro
     - ./docker/bin/ondemand-dex:/usr/sbin/ondemand-dex:ro
     - /etc/slurm:/etc/slurm:ro
