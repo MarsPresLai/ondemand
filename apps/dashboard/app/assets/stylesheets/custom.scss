@@ -1,5 +1,80 @@
 // Bootstrap custom CSS
 
+:root {
+  --ntuee-blue: #003087;
+  --ntuee-blue-dark: #00256a;
+  --ntuee-gold: #b8962e;
+  --ntuee-purple: #5b4fcf;
+  --portal-bg: #f5f6fa;
+  --portal-surface: #ffffff;
+  --portal-border: #d9e2ec;
+  --portal-border-soft: #e5e7eb;
+  --portal-text: #1a1d2e;
+  --portal-text-subtle: #6b7280;
+  --portal-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+  --portal-shadow-soft: 0 4px 16px rgba(15, 23, 42, 0.08);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  background: linear-gradient(180deg, #f8fafc 0%, var(--portal-bg) 100%);
+  color: var(--portal-text);
+}
+
+a {
+  color: var(--ntuee-blue);
+}
+
+a:hover,
+a:focus {
+  color: #004ab3;
+}
+
+.navbar-color {
+  background: var(--ntuee-blue);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+nav.navbar {
+  padding: 0.7rem 1.25rem;
+}
+
+.navbar-color .navbar-brand,
+.navbar-color .nav-link,
+.navbar-color .navbar-text,
+.navbar-color .navbar-toggler {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.navbar-color .nav-link:hover,
+.navbar-color .nav-link:focus,
+.navbar-color .navbar-brand:hover,
+.navbar-color .navbar-brand:focus {
+  color: #ffffff !important;
+}
+
+.navbar-color .dropdown-menu {
+  border: 1px solid var(--portal-border);
+  border-radius: 8px;
+  box-shadow: var(--portal-shadow-soft);
+}
+
+.navbar-color .dropdown-item:active,
+.navbar-color .dropdown-item.active {
+  background: rgba(0, 48, 135, 0.08);
+  color: var(--ntuee-blue);
+}
+
+#main_container {
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+}
+
+#main_container.container-md {
+  max-width: 1240px;
+}
+
 .sr-only * {
     @extend .sr-only;
 }
@@ -9,9 +84,19 @@
 }
 
 .card {
+  background: var(--portal-surface);
+  border: 1px solid var(--portal-border);
+  border-radius: 8px;
+  box-shadow: var(--portal-shadow-soft);
+
   a {
     text-decoration: none !important;
   }
+}
+
+.card-header {
+  background: #f8fafc;
+  border-bottom: 1px solid var(--portal-border);
 }
 
 .breadcrumb-item {
@@ -27,11 +112,45 @@
 
 // Shim for buttons that still use old Bootstrap 3 default button class.
 .btn-default {
-  color: #393939;
-  background-color: #f8f8f8;
-  border-color: #cbcbcb;
+  color: var(--portal-text);
+  background-color: #f8fafc;
+  border-color: var(--portal-border);
 }
 
 .btn-default:hover {
   background-color: darken(#f8f8f8, 10%);
+}
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary,
+.btn-outline-primary,
+.btn-outline-secondary,
+.btn-outline-danger,
+.btn-outline-success,
+.btn-light,
+.btn-dark {
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background: var(--ntuee-blue);
+  border-color: var(--ntuee-blue);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: #004ab3;
+  border-color: #004ab3;
+}
+
+.alert {
+  border-radius: 8px;
+  border-width: 1px;
+}
+
+table.table,
+.table {
+  --bs-table-bg: transparent;
 }

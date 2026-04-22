@@ -31,11 +31,11 @@
 
 .app-launcher {
   position: relative;
-  height: 95%;
+  height: 100%;
   margin-bottom: 1.2em;
 
-  border-radius: 10%;
-  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: var(--portal-shadow-soft);
   overflow: hidden;
 
 
@@ -54,15 +54,19 @@
     display: block;
     background-color: inherit;
     width: 100%;
+    border: 0;
   }
 
   .launcher-click {
     height: 100%;
-    color: black;
+    color: var(--portal-text);
     text-decoration: none;
 
-    border: 4px solid $launcher_border;
-    border-radius: 10%;
+    border: 1px solid var(--portal-border);
+    border-radius: 8px;
+    background: var(--portal-surface);
+    padding: 1.2rem 1rem 1rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   }
 /**
   Pinned Apps border color overrides, to be used with the border_color tile property:
@@ -167,9 +171,9 @@
 
   i, img {
     text-align: center;
-    padding-top: 1rem;
+    padding-top: 0;
     width: unset;
-    font-size: 6.25rem;
+    font-size: 4rem;
   }
 
   i {
@@ -177,8 +181,8 @@
   }
 
   img {
-    max-width: 90%;
-    margin-bottom: 0.2em;
+    max-width: 82%;
+    margin-bottom: 0.45rem;
   }
 
   .app-icon {
@@ -187,15 +191,29 @@
 
   p.app-title {
     margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
   }
 
   p.app-description {
     margin: 0;
-    font-size: 14px;
-    font-weight: 300;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--portal-text-subtle) !important;
+    font-weight: 400;
   }
 }
 
 .app-launcher-hover:hover, .app-launcher-hover:focus-within {
-  transform: scale(0.98);
+  transform: translateY(-2px);
+
+  .launcher-click {
+    border-color: rgba(0, 48, 135, 0.22);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.10);
+  }
+}
+
+.app-launcher-container {
+  margin-bottom: 1rem;
 }

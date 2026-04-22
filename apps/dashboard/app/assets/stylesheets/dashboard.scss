@@ -6,6 +6,82 @@ header sup {
   font-variant: small-caps;
 }
 
+.portal-welcome {
+  margin-bottom: 1.5rem;
+}
+
+.portal-welcome .card-body {
+  padding: 1.5rem;
+}
+
+.portal-welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(91, 79, 207, 0.08);
+  color: var(--ntuee-purple);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.portal-welcome h1 {
+  margin-bottom: 0.35rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.portal-welcome .lead {
+  margin-bottom: 0.9rem;
+  color: var(--portal-text-subtle);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.portal-welcome-meta {
+  color: var(--portal-text-subtle);
+  font-size: 0.9rem;
+}
+
+.portal-welcome-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.portal-welcome-stat {
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--portal-border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.portal-welcome-stat-label {
+  margin-bottom: 0.35rem;
+  color: var(--portal-text-subtle);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.portal-welcome-stat-value {
+  color: var(--portal-text);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.portal-widget-stack > .row {
+  row-gap: 1.2rem;
+}
+
 ul.dropdown-menu .popover {
   width:300px;
 }
@@ -18,9 +94,15 @@ ul.dropdown-menu .popover {
 }
 
 footer {
-  border-top: 1px solid #eee;
-  margin: 0px 15px;
-  padding-top: 30px;
+  border-top: 1px solid var(--portal-border-soft);
+  margin: 0;
+  padding-top: 0;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+footer .footer-logo {
+  display: block;
+  filter: saturate(0.9);
 }
 
 .xdmod .panel-body {
