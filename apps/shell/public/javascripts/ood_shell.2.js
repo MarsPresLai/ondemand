@@ -7,7 +7,49 @@ function OodShell(element, url, profile) {
   this.term    = null;
 }
 
+OodShell.patchHtermForFirefox = function () {
+  if (window.__oodShellHtermPatched || !window.hterm || !hterm.ScrollPort) {
+    return;
+  }
+
+  var proto = hterm.ScrollPort.prototype;
+  var originalSetBackgroundImage = proto.setBackgroundImage;
+  var originalSyncScrollHeight = proto.syncScrollHeight;
+  var originalGetTopRowIndex = proto.getTopRowIndex;
+
+  proto.setBackgroundImage = function (image) {
+    if (!this.screen_) {
+      return;
+    }
+
+    try {
+      return originalSetBackgroundImage.call(this, image);
+    } catch (_error) {
+      this.screen_.style.backgroundImage = '';
+    }
+  };
+
+  proto.syncScrollHeight = function () {
+    if (!this.scrollArea_ || !this.screen_) {
+      return;
+    }
+
+    return originalSyncScrollHeight.call(this);
+  };
+
+  proto.getTopRowIndex = function () {
+    if (!this.screen_) {
+      return 0;
+    }
+
+    return originalGetTopRowIndex.call(this);
+  };
+
+  window.__oodShellHtermPatched = true;
+};
+
 OodShell.prototype.createTerminal = function () {
+  OodShell.patchHtermForFirefox();
   this.socket = new WebSocket(this.url);
   this.socket.onopen    = this.runTerminal.bind(this);
   this.socket.onmessage = this.getMessage.bind(this);
@@ -46,7 +88,6 @@ OodShell.prototype.runTerminal = function () {
 
   // Connect terminal to sacrificial DOM node
   this.term.decorate(this.element);
-  this.term.setAccessibilityEnabled(true);
 
   // Warn user if he/she unloads page
   window.onbeforeunload = function() {
