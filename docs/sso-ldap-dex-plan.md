@@ -131,3 +131,20 @@ The next implementation step should be to extend the current
 
 That gives normal LDAP-backed users an automatic path while preserving manual
 control over special accounts.
+
+## Desktop Rollout Note
+
+For additional remote desktop environments, use configuration management rather
+than hand-installing packages on individual nodes.
+
+Recommended rollout model:
+
+1. keep `XFCE` as the stable default
+2. test one richer desktop on a single node first
+3. install required packages with Ansible or image-based provisioning
+4. only expose the new desktop in OOD after node-side validation
+
+At the moment, `GNOME Flashback` is a better next candidate than full GNOME
+Shell or KDE Plasma for VNC-based OOD sessions. The launcher can live in OOD,
+but the desktop packages themselves should be installed consistently across
+desktop-capable nodes using Ansible to avoid node drift.
