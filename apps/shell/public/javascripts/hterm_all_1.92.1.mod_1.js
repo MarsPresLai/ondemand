@@ -13047,6 +13047,9 @@ hterm.ScrollPort.prototype.blur = function() {
 
 /** @param {string} image */
 hterm.ScrollPort.prototype.setBackgroundImage = function(image) {
+  if (!this.screen_) {
+    return;
+  }
   this.screen_.style.backgroundImage = image;
 };
 
@@ -13367,6 +13370,9 @@ hterm.ScrollPort.prototype.syncScrollbarWidth_ = function() {
  * Resize the scroll area to appear as though it contains every row.
  */
 hterm.ScrollPort.prototype.syncScrollHeight = function() {
+  if (!this.scrollArea_) {
+    return;
+  }
   this.lastRowCount_ = this.rowProvider_.getRowCount();
   this.scrollArea_.style.height = (this.characterSize.height *
                                    this.lastRowCount_ +
@@ -13873,6 +13879,9 @@ hterm.ScrollPort.prototype.scrollRowToMiddle = function(rowIndex) {
  * @return {number}
  */
 hterm.ScrollPort.prototype.getTopRowIndex = function() {
+  if (!this.screen_) {
+    return 0;
+  }
   return Math.round(this.screen_.scrollTop / this.characterSize.height);
 };
 
@@ -23619,4 +23628,3 @@ lib.resource.add('hterm/changelog/date', 'text/plain',
 lib.resource.add('hterm/git/HEAD', 'text/plain',
 '25a9592267b488b5ddd8688677175bfd82f6f515'
 );
-
