@@ -4,10 +4,17 @@ html, body {
   margin: 0;
 }
 
-#terminal {
+#shell-app {
   display: flex;
   flex-direction: column;
   height: 100vh;
+}
+
+#terminal-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  background: #111;
 }
 
 .error {
@@ -67,9 +74,16 @@ padding-left: 0;
   padding: 0px;
 }
 
+#terminal-container > div,
+#terminal-container iframe {
+   flex: 1 1 auto;
+   min-height: 0;
+}
+
 iframe {
-   flex-grow: 1;
-   height: auto !important;
+   border: 0;
+   display: block;
+   height: 100% !important;
    position: static !important;
-   width: auto !important;
+   width: 100% !important;
 } 

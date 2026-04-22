@@ -16,9 +16,8 @@
 </head>
 
 <body>
-  <div id="terminal">
-
-    <nav class="navbar navbar-inverse navbar-static-top navbar-expand" role="navigation" aria-label="Shell Menu">
+  <div id="shell-app">
+    <nav class="navbar navbar-inverse navbar-static-top navbar-expand" role="navigation">
       <div class="container-fluid" >
       <ul class="navbar-nav left-padding-none">
             <li class="nav-item custom-host">
@@ -51,6 +50,7 @@
           </li>
         </ul>
   </nav>
+    <div id="terminal-container" aria-label="Shell terminal"></div>
   </div>
 </body>
 
@@ -136,7 +136,7 @@
 
   setupHterm = function () {
     // Global variables that define the terminal
-      var terminalContainer = document.getElementById('terminal'),
+      var terminalContainer = document.getElementById('terminal-container'),
       webSocketUrl      = urlWithToken();
 
     window.oodShell = new OodShell(terminalContainer, webSocketUrl, profile);
