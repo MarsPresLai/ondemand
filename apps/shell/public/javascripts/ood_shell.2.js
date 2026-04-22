@@ -19,7 +19,7 @@ OodShell.prototype.runTerminal = function () {
   var that = this;
 
   // Create an instance of hterm.Terminal
-  this.term = new hterm.Terminal({ profileId: this.profile });
+  this.term = new hterm.Terminal();
 
   // Handler that fires when terminal is initialized and ready for use
   this.term.onTerminalReady = function () {
@@ -35,6 +35,10 @@ OodShell.prototype.runTerminal = function () {
 
     // Capture all keyboard input
     this.installKeyboard();
+
+    if (that.profile && that.profile !== 'default') {
+      this.setProfile(that.profile);
+    }
   };
 
   // Patch cursor setting
@@ -67,7 +71,10 @@ OodShell.prototype.closeTerminal = function (ev) {
     errorDiv.innerHTML = 'Failed to establish a websocket connection. Be sure you are using a browser that supports websocket connections.';
     this.element.appendChild(errorDiv);
   } else if (ev.code === 3146) {
-    document.querySelector('iframe').remove();
+    var iframe = document.querySelector('iframe');
+    if (iframe) {
+      iframe.remove();
+    }
     errorDiv = document.createElement('div');
     errorDiv.className = 'error';
     errorDiv.innerHTML = ev.reason;
