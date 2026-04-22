@@ -5,47 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Account Pending</title>
     <style>
+      :root {
+        color-scheme: light;
+      }
+
       body {
         margin: 0;
         min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
         font-family: Arial, sans-serif;
-        background: #f3f5f7;
+        background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
         color: #1f2933;
       }
 
       main {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 56px 24px 72px;
-      }
-
-      h1 {
-        margin: 0 0 16px;
-        font-size: 2rem;
-        line-height: 1.2;
-      }
-
-      p {
-        margin: 0 0 16px;
-        font-size: 1rem;
-        line-height: 1.7;
+        width: 100%;
+        max-width: 560px;
       }
 
       .panel {
         background: #ffffff;
         border: 1px solid #d9e2ec;
         border-radius: 8px;
-        padding: 28px 24px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        padding: 28px 24px 22px;
+        box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 14px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: #edf4ff;
+        color: #2155a3;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+        font-size: 1.8rem;
+        line-height: 1.2;
+      }
+
+      p {
+        margin: 0 0 12px;
+        font-size: 1rem;
+        line-height: 1.65;
+      }
+
+      .lead {
+        color: #34414f;
+      }
+
+      .detail {
+        color: #52606d;
+      }
+
+      .action-row {
+        margin: 18px 0 12px;
+      }
+
+      .action-link {
+        display: inline-block;
+        padding: 10px 14px;
+        border-radius: 6px;
+        background: #2155a3;
+        color: #ffffff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .action-link:hover,
+      .action-link:focus {
+        background: #18457f;
+      }
+
+      .note {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e6edf5;
+        font-size: 0.9rem;
+        color: #6b7785;
+      }
+
+      .note a {
+        color: #2155a3;
+        text-decoration: none;
       }
     </style>
   </head>
   <body>
     <main>
       <div class="panel">
+        <div class="eyebrow">Account Pending</div>
         <h1>Account Setup Required</h1>
-        <p>This account has not been provisioned for portal access yet.</p>
-        <p>Placeholder text goes here. You can replace this with your final instructions for users later.</p>
+        <p class="lead">You have signed in successfully, but this account is not provisioned for portal access yet.</p>
+        <p class="detail">若欲使用服務，請向電機系 EECore 申請帳號啟用服務。</p>
+        <div class="action-row">
+          <a class="action-link" href="https://docs.google.com/forms/d/e/1FAIpQLScqKtNFg04Yzjt4kbvbBMk-Hhc9lLjor0tR9BBuznVJGtEuug/viewform?usp=dialog" target="_blank" rel="noopener noreferrer">申請帳號啟用</a>
+        </div>
+        <p class="note">若有任何問題請 E-mail 至 <a href="mailto:ntueehpc@googlegroups.com">ntueehpc@googlegroups.com</a></p>
       </div>
     </main>
   </body>
