@@ -7,7 +7,7 @@
         <p class="lead">集中管理 Slurm 作業、互動式桌面、檔案存取與常用工具，讓叢集工作流程更直接。</p>
         <div class="portal-welcome-meta">登入後可直接使用儀表板中的常用工具，並從系統狀態頁查看目前叢集狀態。</div>
         <div class="portal-welcome-actions">
-          <%= link_to t('dashboard.files'), files_fs_path, class: 'btn btn-primary' %>
+          <%= link_to t('dashboard.files'), files_path(fs: 'fs', filepath: Dir.home), class: 'btn btn-primary' %>
           <%= link_to t('dashboard.my_interactive_sessions'), batch_connect_sessions_path, class: 'btn btn-outline-primary' %>
         </div>
       </div>
