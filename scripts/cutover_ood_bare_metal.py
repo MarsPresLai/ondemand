@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import filecmp
 import os
 import shutil
 from pathlib import Path
@@ -60,15 +61,19 @@ def main() -> int:
     portal_path = Path("/etc/ood/config/ood_portal.yml")
     cluster_path = Path(f"/etc/ood/config/clusters.d/{cluster_id}.yml")
     pre_hook_dst = Path("/var/www/ood/bin/ood_pun_pre_hook.sh")
+    user_map_dst = Path("/var/www/ood/bin/ood_user_map_exists.sh")
     dex_binary_dst = Path("/var/www/ood/bin/ondemand-dex-patched")
     apache_vhost = Path("/etc/apache2/sites-available/ood-portal.conf")
     override_path = Path("/etc/systemd/system/ondemand-dex.service.d/override.conf")
+    account_page_dst = Path("/var/www/ood/public/account_not_provisioned.html")
 
     backup_file(portal_path, backup_dir, "ood_portal.yml.bak")
     backup_file(cluster_path, backup_dir, f"{cluster_id}.yml.bak")
     backup_file(pre_hook_dst, backup_dir, "ood_pun_pre_hook.sh.bak")
+    backup_file(user_map_dst, backup_dir, "ood_user_map_exists.sh.bak")
     backup_file(apache_vhost, backup_dir, "ood-portal.conf.bak")
     backup_file(override_path, backup_dir, "ondemand-dex.override.conf.bak")
+    backup_file(account_page_dst, backup_dir, "account_not_provisioned.html.bak")
 
     ood_portal = f"""---
 servername: {HOSTNAME}
@@ -80,7 +85,8 @@ ssl:
 lua_root: /opt/ood/mod_ood_proxy/lib
 lua_log_level: warn
 
-user_map_match: '^([^@]+)@ntu\\.edu\\.tw$'
+user_map_cmd: /var/www/ood/bin/ood_user_map_exists.sh
+map_fail_uri: /public/account_not_provisioned.html
 
 pun_stage_cmd: sudo /opt/ood/nginx_stage/sbin/nginx_stage
 
@@ -157,10 +163,23 @@ v2:
     os.chown(pre_hook_dst, 0, 0)
     os.chmod(pre_hook_dst, 0o755)
 
+    user_map_src = REPO_ROOT / "bin" / "ood_user_map_exists.sh"
+    shutil.copy2(user_map_src, user_map_dst)
+    os.chown(user_map_dst, 0, 0)
+    os.chmod(user_map_dst, 0o755)
+
+    account_page_src = REPO_ROOT / "docker" / "public" / "account_not_provisioned.html"
+    shutil.copy2(account_page_src, account_page_dst)
+    os.chown(account_page_dst, 0, 0)
+    os.chmod(account_page_dst, 0o644)
+
     dex_binary_src = REPO_ROOT / "docker" / "bin" / "ondemand-dex"
-    shutil.copy2(dex_binary_src, dex_binary_dst)
-    os.chown(dex_binary_dst, 0, 0)
-    os.chmod(dex_binary_dst, 0o755)
+    if not dex_binary_dst.exists() or not filecmp.cmp(dex_binary_src, dex_binary_dst, shallow=False):
+        dex_binary_tmp = dex_binary_dst.with_suffix(".tmp")
+        shutil.copy2(dex_binary_src, dex_binary_tmp)
+        os.chown(dex_binary_tmp, 0, 0)
+        os.chmod(dex_binary_tmp, 0o755)
+        os.replace(dex_binary_tmp, dex_binary_dst)
 
     override = """[Service]
 ExecStart=
